@@ -1,37 +1,49 @@
 const reducer = (state, action) => {
   if (action.type === "CLEAR_CART") {
-    return { ...state, cart: [] };
+    return { ...state, cart: new Map() };
   }
+
   if (action.type === "REMOVE") {
-    return {
-      ...state,
-      cart: state.cart.filter((item) => item.id !== action.payload.id),
-    };
+    const newCart = new Map(state.cart);
+    newCart.delete(action.payload.id);
+    return { ...state, cart: newCart };
   }
+
   if (action.type === "INCREASE") {
-    let tempCart = state.cart.map((item) => {
-      if (item.id === action.payload.id) {
-        return { ...item, amount: item.amount + 1 };
-      }
-      return item;
-    });
-    return { ...state, cart: tempCart };
+    const newCart = new Map(state.cart);
+    const item = newCart.get(action.payload.id);
+    if (item) {
+      newCart.set(action.payload.id, { ...item, amount: item.amount + 1 });
+    }
+    return { ...state, cart: newCart };
   }
+
   if (action.type === "DECREASE") {
-    let tempCart = state.cart.map((item) => {
-      if (item.id === action.payload.id) {
-        return { ...item, amount: item.amount - 1 };
+    const newCart = new Map(state.cart);
+    const item = newCart.get(action.payload.id);
+    if (item) {
+      const newAmount = item.amount - 1;
+      if (newAmount > 0) {
+        newCart.set(action.payload.id, { ...item, amount: newAmount });
+      } else {
+        newCart.delete(action.payload.id);
       }
-      return item;
-    });
-    return { ...state, cart: tempCart };
+    }
+    return { ...state, cart: newCart };
   }
+
   if (action.type === "LOADING") {
     return { ...state, loading: true };
   }
+
   if (action.type === "DISPLAY_ITEMS") {
-    return { ...state, cart: action.payload.cart, loading: false };
+    const newCart = new Map();
+    action.payload.cart.forEach((item) => {
+      newCart.set(item.id, item);
+    });
+    return { ...state, cart: newCart, loading: false };
   }
+
   return state;
 };
 
